@@ -10,6 +10,7 @@
 - [Problems](#problems)
 - [Setup](#setup)
 - [Python, C++ Code](#python-c-code)
+- [Model Architecture](#model-architecture)
 - [Resources](#resources)
 - [Datasets](#datasets)
 
@@ -60,6 +61,8 @@ float fourthPrediction = _RenderTexture[txTop4.xy];
 float fifthPrediction = _RenderTexture[txTop5.xy];
 ```
 
+Mapping of the predicted class indexes to Japanese character can be found in [jp_seq2text.tsv](https://github.com/SCRN-VRC/Japanese-Handwriting-Classification-with-Fragment-Shaders/tree/main/Python/data)
+
 This is only if you want to edit the shaders, the prefabs should work out the box.
 
 ### Python, C++ Code
@@ -80,3 +83,17 @@ conv_mixer_model = get_conv_mixer_256_8(image_size=64,
 - C++
     - Requires [stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h)
     - Windows, for non-Windows platforms remove the Windows.h include.
+
+## Model Architecture
+- [Image Preview](./Python/conv_mixer_144_5.svg)
+
+## Resources
+- [Patches Are All You Need](https://openreview.net/pdf?id=TVHS5Y4dNvM)
+- [Image classification with ConvMixer](https://keras.io/examples/vision/convmixer/)
+
+## Datasets
+- [ETL Character Database](http://etlcdb.db.aist.go.jp/)
+
+Thanks to [orels1](https://twitter.com/orels1_) for setting up VMs for me to train on.
+
+If you have questions or comments, you can reach me on Discord: SCRN#8008 or Twitter: https://twitter.com/SCRNinVR
