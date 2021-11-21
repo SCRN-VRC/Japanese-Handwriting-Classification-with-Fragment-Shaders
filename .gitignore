@@ -13,7 +13,9 @@ Unity/Assets/VRCSDK*
 Unity/Assets/Plugins/VRCSDK*
 Unity/Assets/VRChat*
 Unity/Assets/VRChat Examples*
-Python/data/*
+Python/data/*.pkl
+Python/data/*.npy
+Python/data/kkanji2/*
 Python/fonts/*
 C++/stb_image.h
 
@@ -489,6 +491,5 @@ FodyWeavers.xsd
 
 # Other
 *.npz
-*.h5
 *.kra
 

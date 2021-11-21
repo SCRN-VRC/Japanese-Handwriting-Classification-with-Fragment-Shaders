@@ -77,7 +77,7 @@
                 i.uv = i.uv * actualSize / _MSDFTex_TexelSize.zw;
                 
                 uint offx = floor(i.uv.x * _Size);
-                uint word = round(_MainTex[txTop1.xy + uint2(offx, 0)]) + 3;
+                uint word = round(_MainTex[txTop1.xy + uint2(offx, 0)]);
                 i.uv.x = mod(i.uv.x, 1.0 / _Size);
                 i.uv.x += ((word % _Size) * _CharWidth) / _MSDFTex_TexelSize.z;
                 i.uv.y += ((_Size - (word / _Size) - 1) * _CharWidth) / _MSDFTex_TexelSize.w;

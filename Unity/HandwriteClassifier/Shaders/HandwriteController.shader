@@ -103,11 +103,12 @@
                         }
                     }
 
-                    StoreValue(txTop1, ind1, col, px);
-                    StoreValue(txTop2, ind2, col, px);
-                    StoreValue(txTop3, ind3, col, px);
-                    StoreValue(txTop4, ind4, col, px);
-                    StoreValue(txTop5, ind5, col, px);
+                    // +3 cause the classifier skips the 3 special tokens
+                    StoreValue(txTop1, ind1 + 3, col, px);
+                    StoreValue(txTop2, ind2 + 3, col, px);
+                    StoreValue(txTop3, ind3 + 3, col, px);
+                    StoreValue(txTop4, ind4 + 3, col, px);
+                    StoreValue(txTop5, ind5 + 3, col, px);
 
                     //buffer[0] = float4(ind1, ind2, ind3, ind4);
                 }

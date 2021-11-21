@@ -225,7 +225,7 @@ conv_mixer_model = get_conv_mixer_256_8(image_size=image_size,
     
 if 0:
     history, conv_mixer_model = run_experiment(conv_mixer_model)
-    conv_mixer_model.save_weights(MODEL_DIR + 'conv_mixer_100_4_0.h5')
+    conv_mixer_model.save_weights(MODEL_DIR + 'conv_mixer_144_4_0.h5')
 else:
     conv_mixer_model.load_weights(MODEL_DIR + 'conv_mixer_144_4_13.h5')
     img = load_img('./input/input1.jpg')
@@ -234,19 +234,19 @@ else:
     img = np.asarray(img)[:,:,0]
     img = np.expand_dims(img, axis=0)
     
-    def test():
-        a = np.zeros((64, 64, 3))
-        for k in range(0, 3):
-            for i in range(0, 64):
-                for j in range(0, 64):
-                    if k == 0:
-                        a[i][j][k] = (i / 63.0) * (j / 63.0)
-                    elif k == 1:
-                        a[i][j][k] = ((63.0 - i) / 63.0) * (j / 63.0)
-                    else:
-                        a[i][j][k] = (i / 63.0) * ((63.0 - j) / 63.0)
-        a = np.expand_dims(a, 0)
-        return a
+    # def test():
+    #     a = np.zeros((64, 64, 3))
+    #     for k in range(0, 3):
+    #         for i in range(0, 64):
+    #             for j in range(0, 64):
+    #                 if k == 0:
+    #                     a[i][j][k] = (i / 63.0) * (j / 63.0)
+    #                 elif k == 1:
+    #                     a[i][j][k] = ((63.0 - i) / 63.0) * (j / 63.0)
+    #                 else:
+    #                     a[i][j][k] = (i / 63.0) * ((63.0 - j) / 63.0)
+    #     a = np.expand_dims(a, 0)
+    #     return a
     
     # get weights
     weights = conv_mixer_model.get_weights()

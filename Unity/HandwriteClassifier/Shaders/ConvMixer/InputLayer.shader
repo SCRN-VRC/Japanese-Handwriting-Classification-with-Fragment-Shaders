@@ -91,12 +91,19 @@
                     uint i0 = i * 2, i1 = i0 + 1;
                     uint j0 = j * 2, j1 = j0 + 1;
 
+                    // The input needs to be at a certain orientation cause 0,0 is different
+                    // on different platforms, this is to undo the input camera flipping
+                    float2 _00 = (float2(i0, j0) / 63); _00.x = 1. - _00.x;
+                    float2 _01 = (float2(i0, j1) / 63); _01.x = 1. - _01.x;
+                    float2 _10 = (float2(i1, j0) / 63); _10.x = 1. - _10.x;
+                    float2 _11 = (float2(i1, j1) / 63); _11.x = 1. - _11.x;
+
                     // 2x2 kernel
                     float s = 
-                        (1.0 - tex2D(_InputTex, (float2(i0, j0) / 63))) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(0, 0, k), 2) +
-                        (1.0 - tex2D(_InputTex, (float2(i0, j1) / 63))) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(0, 1, k), 2) +
-                        (1.0 - tex2D(_InputTex, (float2(i1, j0) / 63))) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(1, 0, k), 2) +
-                        (1.0 - tex2D(_InputTex, (float2(i1, j1) / 63))) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(1, 1, k), 2);
+                        (1.0 - tex2D(_InputTex, _00)) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(0, 0, k), 2) +
+                        (1.0 - tex2D(_InputTex, _01)) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(0, 1, k), 2) +
+                        (1.0 - tex2D(_InputTex, _10)) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(1, 0, k), 2) +
+                        (1.0 - tex2D(_InputTex, _11)) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(1, 1, k), 2);
                         // testGen(uint3(i0, j0, 0), 64..xx) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(0, 0, k), 2) +
                         // testGen(uint3(i0, j1, 0), 64..xx) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(0, 1, k), 2) +
                         // testGen(uint3(i1, j0, 0), 64..xx) * getConst(_WeightsTex, _WeightBiasLoopID.x, uint3(1, 0, k), 2) +
