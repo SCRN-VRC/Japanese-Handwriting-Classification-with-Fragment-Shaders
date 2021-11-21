@@ -610,52 +610,6 @@ public:
         }
     }
 
-    // depth wise convolution
-    void depthConv5x5TEST(float*** cl, float**** cw, float* bias,
-        float* gamma, float* beta, float* mm, float* mv, float*** pl, int im, int jm, int k)
-    {
-        for (int i = 0; i < im; i++) {
-            for (int j = 0; j < jm; j++) {
-                int i0 = i, i1 = i0 + 1, i2 = i0 + 2, i3 = i0 + 3, i4 = i0 + 4;
-                int j0 = j, j1 = j0 + 1, j2 = j0 + 2, j3 = j0 + 3, j4 = j0 + 4;
-                // 5x5 depth wise kernel
-                cl[i][j][k] =
-                    padLayerEven(pl, i0, j0, k, im, jm) * cw[0][0][k][0] +
-                    padLayerEven(pl, i0, j1, k, im, jm) * cw[0][1][k][0] +
-                    padLayerEven(pl, i0, j2, k, im, jm) * cw[0][2][k][0] +
-                    padLayerEven(pl, i0, j3, k, im, jm) * cw[0][3][k][0] +
-                    padLayerEven(pl, i0, j4, k, im, jm) * cw[0][4][k][0] +
-                    padLayerEven(pl, i1, j0, k, im, jm) * cw[1][0][k][0] +
-                    padLayerEven(pl, i1, j1, k, im, jm) * cw[1][1][k][0] +
-                    padLayerEven(pl, i1, j2, k, im, jm) * cw[1][2][k][0] +
-                    padLayerEven(pl, i1, j3, k, im, jm) * cw[1][3][k][0] +
-                    padLayerEven(pl, i1, j4, k, im, jm) * cw[1][4][k][0] +
-                    padLayerEven(pl, i2, j0, k, im, jm) * cw[2][0][k][0] +
-                    padLayerEven(pl, i2, j1, k, im, jm) * cw[2][1][k][0] +
-                    padLayerEven(pl, i2, j2, k, im, jm) * cw[2][2][k][0] +
-                    padLayerEven(pl, i2, j3, k, im, jm) * cw[2][3][k][0] +
-                    padLayerEven(pl, i2, j4, k, im, jm) * cw[2][4][k][0] +
-                    padLayerEven(pl, i3, j0, k, im, jm) * cw[3][0][k][0] +
-                    padLayerEven(pl, i3, j1, k, im, jm) * cw[3][1][k][0] +
-                    padLayerEven(pl, i3, j2, k, im, jm) * cw[3][2][k][0] +
-                    padLayerEven(pl, i3, j3, k, im, jm) * cw[3][3][k][0] +
-                    padLayerEven(pl, i3, j4, k, im, jm) * cw[3][4][k][0] +
-                    padLayerEven(pl, i4, j0, k, im, jm) * cw[4][0][k][0] +
-                    padLayerEven(pl, i4, j1, k, im, jm) * cw[4][1][k][0] +
-                    padLayerEven(pl, i4, j2, k, im, jm) * cw[4][2][k][0] +
-                    padLayerEven(pl, i4, j3, k, im, jm) * cw[4][3][k][0] +
-                    padLayerEven(pl, i4, j4, k, im, jm) * cw[4][4][k][0];
-
-                // bias
-                cl[i][j][k] = cl[i][j][k] + bias[k];
-                // activation
-                cl[i][j][k] = GELU(cl[i][j][k]);
-                // batch norm
-                cl[i][j][k] = batchNorm(cl[i][j][k], gamma[k], beta[k], mm[k], mv[k]);
-            }
-        }
-    }
-
     // point wise convolution
     void pointConv1x1(float*** cl, float**** cw, float* bias,
         float* gamma, float* beta, float* mm, float* mv, float*** pl1, float*** pl2,
@@ -742,7 +696,7 @@ public:
 
         // L3, depthwise conv=5x5x144, stride=1, padding=even, batch norm
         for (int k = 0; k < 144; k++) {
-            thread t(&jp_classifier::depthConv5x5TEST, this, l3, const18, const19,
+            thread t(&jp_classifier::depthConv5x5, this, l3, const18, const19,
                 const20, const21, const22, const23, l2, 32, 32, k);
             threads.push_back(move(t));
         }
