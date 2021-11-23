@@ -28,7 +28,7 @@ The name comes from the paper [Patches Are All You Need](https://openreview.net/
 
 The basic idea is to break down the input image into patches, and run it through layers of depth-wise and point-wise convolutions. But unlike standard convolutional models, the ConvMixer architecture does not downsample successive layers, it keeps all layers the same size.
 
-This JP handwriting classification network uses ConvMixer-144/4, with a depth of 5.
+This JP handwriting classification network uses ConvMixer-144/4, with a kernel size of 5.
 
 ## Problems
 
