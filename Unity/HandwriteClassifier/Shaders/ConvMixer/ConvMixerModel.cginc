@@ -3,7 +3,7 @@
 
 #define mod(x,y) ((x)-(y)*floor((x)/(y))) // glsl mod
 #define eps 0.001
-#define MIN_FLOAT -1e6
+#define MIN_FLOAT -1e6f
 
 /* Weights */
 
@@ -85,19 +85,19 @@ static const uint4 layersPos[12] =
     57, 1296, 57, 57,       // l11
 };
 
-float testGen(uint3 pos, float2 size)
-{
-    float r;
-    size = size - 1;
-    if (pos.x > size.x || pos.y > size.y) return 0.0;
-    if (pos.z == 0)
-        r = (pos.x / size.x) * (pos.y / (size.y * 0.5));
-    else if (pos.z == 1)
-        r = ((size.x - pos.x) / size.x) * (pos.y /  size.y);
-    else
-        r = (pos.x / size.x) * ((size.y - pos.y) /  size.y);
-    return r;
-}
+// float testGen(uint3 pos, float2 size)
+// {
+//     float r;
+//     size = size - 1;
+//     if (pos.x > size.x || pos.y > size.y) return 0.0;
+//     if (pos.z == 0)
+//         r = (pos.x / size.x) * (pos.y / (size.y * 0.5));
+//     else if (pos.z == 1)
+//         r = ((size.x - pos.x) / size.x) * (pos.y /  size.y);
+//     else
+//         r = (pos.x / size.x) * ((size.y - pos.y) /  size.y);
+//     return r;
+// }
 
 // https://www.johndcook.com/blog/cpp_erf/
 float ERF(float x)
@@ -199,14 +199,19 @@ float getConstDense(Texture2D<float> tex, uint ID, uint2 off)
 #define sc_uint2 static const uint2
 
 sc_uint2 txLayerCount = layersPos[11].xy + uint2(0, 0);
-sc_uint2 txTop1 = layersPos[11].xy + uint2(1, 0);
-sc_uint2 txTop2 = layersPos[11].xy + uint2(2, 0);
-sc_uint2 txTop3 = layersPos[11].xy + uint2(3, 0);
-sc_uint2 txTop4 = layersPos[11].xy + uint2(4, 0);
-sc_uint2 txTop5 = layersPos[11].xy + uint2(5, 0);
-sc_uint2 txInputState = layersPos[11].xy + uint2(6, 0);
+sc_uint2 txInputState = layersPos[11].xy + uint2(2, 0);
+sc_uint2 txTop1 = layersPos[11].xy + uint2(3, 0);
+sc_uint2 txTop2 = layersPos[11].xy + uint2(4, 0);
+sc_uint2 txTop3 = layersPos[11].xy + uint2(5, 0);
+sc_uint2 txTop4 = layersPos[11].xy + uint2(6, 0);
+sc_uint2 txTop5 = layersPos[11].xy + uint2(7, 0);
+sc_uint2 txTop1Val = layersPos[11].xy + uint2(8, 0);
+sc_uint2 txTop2Val = layersPos[11].xy + uint2(9, 0);
+sc_uint2 txTop3Val = layersPos[11].xy + uint2(10, 0);
+sc_uint2 txTop4Val = layersPos[11].xy + uint2(11, 0);
+sc_uint2 txTop5Val = layersPos[11].xy + uint2(12, 0);
 
-#define INPUT_THRESHOLD     5.0
+#define INPUT_THRESHOLD     0.0
 #define HAND_IDLE           0
 #define HAND_DOWN           1
 #define HAND_UP             2

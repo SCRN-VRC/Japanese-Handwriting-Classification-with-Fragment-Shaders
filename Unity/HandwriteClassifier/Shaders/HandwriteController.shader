@@ -1,4 +1,4 @@
-﻿Shader "HandwriteClassify/Conrtoller"
+﻿Shader "HandwriteClassify/Controller"
 {
     Properties
     {
@@ -84,11 +84,11 @@
                 }
 
                 // classify scores
-                if (round(layerCount) == 11 && all(px <= txTop5))
+                if (round(layerCount) == 11 && all(px <= txTop5Val))
                 {
                     float ind1, ind2, ind3, ind4, ind5;
                     float val1, val2, val3, val4, val5;
-                    ind1 = ind2 = ind3 = ind4 = ind5 = 0;
+                    ind1 = ind2 = ind3 = ind4 = ind5 = -1.0;
                     val1 = val2 = val3 = val4 = val5 = MIN_FLOAT;
                     for (uint i = 0; i < 3225; i++)
                     {
@@ -109,6 +109,12 @@
                     StoreValue(txTop3, ind3 + 3, col, px);
                     StoreValue(txTop4, ind4 + 3, col, px);
                     StoreValue(txTop5, ind5 + 3, col, px);
+                    // exp for softmax calcs in the graph
+                    StoreValue(txTop1Val, exp(val1), col, px);
+                    StoreValue(txTop2Val, exp(val2), col, px);
+                    StoreValue(txTop3Val, exp(val3), col, px);
+                    StoreValue(txTop4Val, exp(val4), col, px);
+                    StoreValue(txTop5Val, exp(val5), col, px);
 
                     //buffer[0] = float4(ind1, ind2, ind3, ind4);
                 }
@@ -129,12 +135,12 @@
                 if (inputState == HAND_IDLE)
                 {
                     // Idle until something touches
-                    inputState = touchPosCount.z >= INPUT_THRESHOLD ?
+                    inputState = touchPosCount.z > INPUT_THRESHOLD ?
                         HAND_DOWN : HAND_IDLE;
                 }
                 else if (inputState == HAND_DOWN)
                 {
-                    inputState = touchPosCount.z == 0.0 ?
+                    inputState = touchPosCount.z <= INPUT_THRESHOLD ?
                         HAND_UP : HAND_DOWN;
                 }
                 else if (inputState == HAND_UP)
