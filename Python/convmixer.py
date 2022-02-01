@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import tensorflow_addons as tfa
 import tensorflow as tf
 import numpy as np
+from PIL import Image, ImageDraw
+import math
 import pickle
 import struct
 import os
@@ -16,8 +18,9 @@ MODEL_DIR = './model/'
 
 learning_rate = 0.00075
 weight_decay = 0.00005
-batch_size = 64
+batch_size = 32
 num_epochs = 30
+image_size = 64
 
 # generated stuff
 gen_out = np.load(DATA_DIR + 'gen_out.npy')
@@ -48,6 +51,34 @@ with open(DATA_DIR + 'jp_seq2text.tsv', encoding='utf-8') as f:
 gen_labels2 = np.asarray([int(char2Num.get(lb)) - 3 for lb in gen_labels2])
 gen_labels2 = np.expand_dims(gen_labels2, axis=1)
 
+# generate some noise
+for i in range(len(gen_out)):
+
+    # creating new Image object
+    mask = Image.new("L", (image_size, image_size), color=0)
+      
+    # create line image
+    img1 = ImageDraw.Draw(mask)
+    
+    if np.random.rand() < 0.5:
+        shape1 = [(np.random.randint(0, image_size), np.random.randint(0, image_size)),
+                 (image_size - np.random.randint(0, image_size), image_size - np.random.randint(0, image_size))]
+        img1.line(shape1, fill ="white", width = np.random.randint(2, 5))
+    if np.random.rand() < 0.6:
+        shape2 = [(np.random.randint(0, image_size), np.random.randint(0, image_size)),
+                 (image_size - np.random.randint(0, image_size), image_size - np.random.randint(0, image_size))]
+        img1.line(shape2, fill ="white", width = np.random.randint(2, 5))
+    if np.random.rand() < 0.7:
+        shape3 = [(np.random.randint(0, image_size), np.random.randint(0, image_size)),
+                 (image_size - np.random.randint(0, image_size), image_size - np.random.randint(0, image_size))]
+        img1.line(shape3, fill ="white", width = np.random.randint(2, 5))
+    if np.random.rand() < 0.8:
+        shape4 = [(np.random.randint(0, image_size), np.random.randint(0, image_size)),
+                 (image_size - np.random.randint(0, image_size), image_size - np.random.randint(0, image_size))]
+        img1.line(shape4, fill ="white", width = np.random.randint(2, 5))
+
+    gen_out[i] = np.maximum(gen_out[i], np.asarray(mask))
+
 # shuffle data
 def unison_shuffled_copies(a, b):
     assert len(a) == len(b)
@@ -73,7 +104,6 @@ print(f"Training data samples: {len(new_x_train)}")
 print(f"Validation data samples: {len(x_val)}")
 print(f"Test data samples: {len(x_test)}")
 
-image_size = 64
 auto = tf.data.AUTOTUNE
 
 data_augmentation = keras.Sequential(
@@ -224,10 +254,11 @@ conv_mixer_model = get_conv_mixer_256_8(image_size=image_size,
                                         num_classes=char_num)
     
 if 0:
-    history, conv_mixer_model = run_experiment(conv_mixer_model)
-    conv_mixer_model.save_weights(MODEL_DIR + 'conv_mixer_144_4_0.h5')
-else:
     conv_mixer_model.load_weights(MODEL_DIR + 'conv_mixer_144_4_13.h5')
+    history, conv_mixer_model = run_experiment(conv_mixer_model)
+    conv_mixer_model.save_weights(MODEL_DIR + 'conv_mixer_144_4_100.h5')
+else:
+    conv_mixer_model.load_weights(MODEL_DIR + 'conv_mixer_144_4_14.h5')
     img = load_img('./input/input1.jpg')
     #predict(conv_mixer_model, img, debug=True)
     
@@ -256,11 +287,11 @@ else:
     outputs = [K.function([conv_mixer_model.input], [layer.output])([img]) for layer in conv_mixer_model.layers]
     outputs_names = [layer.name for layer in conv_mixer_model.layers]
     
-    # dest = './model/jp_convmixer.bytes'
+    dest = './model/jp_convmixer.bytes'
     
-    # try:
-    #     os.remove(dest)
-    # except OSError:
-    #     pass
-    # for i in range(0, len(weights)):
-    #     write_weights(weights[i], dest)
+    try:
+        os.remove(dest)
+    except OSError:
+        pass
+    for i in range(0, len(weights)):
+        write_weights(weights[i], dest)
