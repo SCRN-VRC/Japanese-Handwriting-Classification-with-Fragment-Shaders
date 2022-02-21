@@ -30,7 +30,7 @@ public class JPHandwrite : EditorWindow
         if (GUILayout.Button("Bake!") && source0 != null) {
             string path = AssetDatabase.GetAssetPath(source0);
             int fileDir = path.LastIndexOf("/");
-            SavePath = path.Substring(0, fileDir) + "/baked-JPWrite.asset";
+            SavePath = path.Substring(0, fileDir) + "/baked-JPHandwrite.asset";
             OnGenerateTexture();
         }
     }

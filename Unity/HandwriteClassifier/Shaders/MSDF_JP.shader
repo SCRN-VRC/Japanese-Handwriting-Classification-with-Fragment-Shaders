@@ -2,7 +2,7 @@
 {
     Properties
     {
-        _MainTex ("Translator Output", 2D) = "white" {}
+        _LayersTex ("Translator Output", 2D) = "white" {}
         [HDR]_Color("Text Color", Color) = (1, 1, 1, 1)
         [HDR]_BGColor("BG Color", Color) = (0, 0, 0, 1)
         [NoScaleOffset]_MSDFTex("MSDF Texture", 2D) = "black" {}
@@ -44,7 +44,7 @@
                 float2 uv : TEXCOORD0;
             };
 
-            Texture2D<float> _MainTex;
+            Texture2D<float> _LayersTex;
             float4 _Color;
             float4 _BGColor;
             sampler2D _MSDFTex; float4 _MSDFTex_TexelSize;
@@ -71,14 +71,23 @@
 
             float4 frag (v2f i) : SV_Target
             {
+                clip(unity_OrthoParams.w ? -1 : 1);
+                float2 borderUV = i.uv;
+                // highlight selected
+                uint horzState = floor(_LayersTex[txHBtnState]);
+                float horzSel = _LayersTex[txHBtnSel] *
+                    ((horzState == HAND_DOWN) ? 1.0 : 0) - 1.0;
+                float red = abs(i.uv.x - 0.1 * (1.0 + 2.0 * horzSel)) < 0.1 ? 1.0 : 0.0;
+                _BGColor.rgb = lerp(_BGColor.rgb, float3(red, 0, 0), red.x);
+                
                 i.uv /= _Size;
                 i.uv.x *= _MaxLen;
                 float2 actualSize = _Size * _CharWidth;
                 i.uv = i.uv * actualSize / _MSDFTex_TexelSize.zw;
-                
                 uint offx = floor(i.uv.x * _Size);
-                uint word = round(_MainTex[txTop1.xy + uint2(offx, 0)]);
+                uint word = round(_LayersTex[txTop1.xy + uint2(offx, 0)]);
                 i.uv.x = mod(i.uv.x, 1.0 / _Size);
+                float border = all(abs(float2(i.uv.x * _Size, borderUV.y) - 0.5) < 0.47) ? 1.0 : 0.0;
                 i.uv.x += ((word % _Size) * _CharWidth) / _MSDFTex_TexelSize.z;
                 i.uv.y += ((_Size - (word / _Size) - 1) * _CharWidth) / _MSDFTex_TexelSize.w;
 
@@ -88,6 +97,7 @@
                 sigDist *= max(dot(msdfUnit, 0.5/fwidth(i.uv)), 1); // Max to handle fading out to quads in the distance
                 float opacity = clamp(sigDist + 0.5, 0.0, 1.0);
                 float4 color = lerp(_BGColor, i.color, opacity);
+                color.rgb *= border;
 
                 color.a = word < 3 ? 0.0 : color.a;
                 clip(color.a - 0.005);

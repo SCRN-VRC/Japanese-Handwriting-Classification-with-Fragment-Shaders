@@ -4,7 +4,7 @@
     {
         _MainTex ("Input", 2D) = "black" {}
         _BufferTex ("Buffer", 2D) = "black" {}
-        _ClearBtnTex ("Clear Button Input", 2D) = "black" {}
+        _LayersTex ("Layer Input", 2D) = "black" {}
         _MaxDist ("Max Distance", Float) = 0.02
     }
     SubShader
@@ -26,6 +26,7 @@
             #pragma target 5.0
 
             #include "UnityCG.cginc"
+            #include "ConvMixer/ConvMixerModel.cginc"
 
             struct appdata
             {
@@ -39,14 +40,14 @@
                 float4 vertex : SV_POSITION;
             };
 
-            Texture2D<float4> _BufferTex;
+            RWStructuredBuffer<float4> buffer : register(u1);
+            Texture2D<float> _BufferTex;
             float4 _BufferTex_TexelSize;
 
-            Texture2D<float4> _MainTex;
+            Texture2D<float> _MainTex;
             float4 _MainTex_TexelSize;
 
-            Texture2D<float4> _ClearBtnTex;
-            float4 _ClearBtnTex_TexelSize;
+            Texture2D<float> _LayersTex;
 
             float _MaxDist;
 
@@ -65,27 +66,27 @@
                 return o;
             }
 
-            float4 frag (v2f i) : SV_Target
+            float frag (v2f i) : SV_Target
             {
                 clip(i.uv.z);
                 // sample the texture
-                float4 col = _MainTex.Load(int3(i.uv.xy * _MainTex_TexelSize.zw, 0));
-                float4 buf = _BufferTex.Load(int3(i.uv.xy * _BufferTex_TexelSize.zw, 0));
-                
-                float3 touchPosCount = 0.0;
-                for (uint i = 0; i < uint(_ClearBtnTex_TexelSize.z); i++)
-                {
-                    for (uint j = 0; j < uint(_ClearBtnTex_TexelSize.w); j++)
-                    {
-                        float hit = _ClearBtnTex[uint2(i, j)].r;
-                        touchPosCount.xy += hit > 0.1 ? float2(i, j) : 0..xx;
-                        touchPosCount.z += hit > 0.1 ? 1.0 : 0.0;
-                    }
-                }
+                float2 mUV = i.uv.xy / 2.0 + 0.25;
+                float col = _MainTex.Load(int3(mUV * _MainTex_TexelSize.zw, 0));
+                float buf = _BufferTex.Load(int3(i.uv.xy * _BufferTex_TexelSize.zw, 0));
+
+                bool hit = abs(col - 0.5) <= 0.0075;
+                col = hit ? col / 0.0075 : 0.0;
+
+                float vertSel = _LayersTex[txVBtnSel];
+                uint vertState = floor(_LayersTex[txVBtnState]);
+                uint horzState = floor(_LayersTex[txHBtnState]);
+
+                bool clear = ((vertSel > 2.0) && vertState == HAND_DOWN) ||
+                    (horzState == HAND_DOWN);
 
                 col = saturate(col * 2.0 + buf);
-                col = touchPosCount.z > 5.0 ? 0..xxxx : col;
-
+                col = clear ? 0..xxxx : col;
+                //buffer[0] = float4(vertSel, vertState, 0, 0);
                 return col;
             }
             ENDCG

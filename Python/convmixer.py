@@ -254,13 +254,13 @@ conv_mixer_model = get_conv_mixer_256_8(image_size=image_size,
                                         num_classes=char_num)
     
 if 0:
-    conv_mixer_model.load_weights(MODEL_DIR + 'conv_mixer_144_4_13.h5')
+    conv_mixer_model.load_weights(MODEL_DIR + 'conv_mixer_144_4_14.h5')
     history, conv_mixer_model = run_experiment(conv_mixer_model)
     conv_mixer_model.save_weights(MODEL_DIR + 'conv_mixer_144_4_100.h5')
 else:
     conv_mixer_model.load_weights(MODEL_DIR + 'conv_mixer_144_4_14.h5')
     img = load_img('./input/input1.jpg')
-    #predict(conv_mixer_model, img, debug=True)
+    predict(conv_mixer_model, img, debug=True)
     
     img = np.asarray(img)[:,:,0]
     img = np.expand_dims(img, axis=0)

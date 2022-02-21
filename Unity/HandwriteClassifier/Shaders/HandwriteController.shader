@@ -1,4 +1,4 @@
-﻿Shader "HandwriteClassify/Controller"
+﻿Shader "HandwriteClassify/HandwriteController"
 {
     Properties
     {
@@ -75,11 +75,11 @@
 
                 float col = _LayersTex[px];
                 float layerCount = _LayersTex[txLayerCount];
-                uint inputState = round(_LayersTex[txInputState]);
+                uint inputState = floor(_LayersTex[txInputState]);
 
                 if (_Time.y < 1.0)
                 {
-                    layerCount = 0.0;
+                    layerCount = 11.0;
                     inputState = HAND_IDLE;
                 }
 
@@ -121,17 +121,23 @@
 
                 // Handwrite input
                 float3 touchPosCount = 0.0;
-                for (uint i = 0; i < uint(_HandwriteTex_TexelSize.z); i++)
+                // Since the bounding box is 2x larger
+                uint Ws = uint(_HandwriteTex_TexelSize.z * 0.25);
+                uint We = Ws * 3;
+                uint Hs = uint(_HandwriteTex_TexelSize.w * 0.25);
+                uint He = Hs * 3;
+                for (uint i = Ws; i < We; i++)
                 {
-                    for (uint j = 0; j < uint(_HandwriteTex_TexelSize.w); j += 2)
+                    for (uint j = Hs; j < He; j += 2)
                     {
                         uint jx = (i & 0x1) == 0 ? j : j + 1;
-                        float hit = _HandwriteTex[uint2(i, jx)].r;
-                        touchPosCount.xy += hit > 0.1 ? float2(i, jx) : 0..xx;
-                        touchPosCount.z += hit > 0.1 ? 1.0 : 0.0;
+                        float depth = _HandwriteTex[uint2(i, jx)].r;
+                        bool hit = abs(depth - 0.5) <= 0.0075;
+                        touchPosCount.xy += hit ? float2(i, jx) : 0..xx;
+                        touchPosCount.z += hit ? 1.0 : 0.0;
                     }
                 }
-
+                //buffer[0] = float4(touchPosCount.xyz, 0);
                 if (inputState == HAND_IDLE)
                 {
                     // Idle until something touches
@@ -152,11 +158,40 @@
                     inputState = HAND_IDLE;
                 }
 
+                // increment layers
                 layerCount = inputState == HAND_UP ? 0 : min(layerCount + 1.0, 12.0);
-                //buffer[0] = layerCount;
+                
+                // translator input buffer logic
+                if (all(px >= txInputBuffer))
+                {
+
+                    float VbtnSel = _LayersTex[txVBtnSel];
+                    uint VbtnState = floor(_LayersTex[txVBtnState]);
+                    float VbtnEnter = _LayersTex[txVBtnEnter];
+                    float HbtnSel = _LayersTex[txHBtnSel];
+                    uint HbtnState = floor(_LayersTex[txHBtnState]);
+                    float HbtnEnter = _LayersTex[txHBtnEnter];
+                    int cursorPos = _LayersTex[txCursorPos];
+
+                    px -= txInputBuffer;
+                    col = _Time.y < 1.0 ? 0.0 : col; // fill empty
+                    // user selects input character
+                    if (HbtnState == HAND_DOWN && HbtnEnter < 1.0)
+                    {
+                        uint word = round(_LayersTex[txTop1.xy + uint2(HbtnSel - 1, 0)]);
+                        col = px.x == cursorPos ? word : col;
+                    }
+                    // backspace
+                    else if (VbtnState == HAND_DOWN && VbtnEnter < 1.0 && abs(VbtnSel - 2.0) < eps)
+                    {
+                        col = px.x == (cursorPos - 1) ? 2.0 : col;
+                        col = px.x == (cursorPos) ? 0.0 : col;
+                    }
+                }
+
+                //buffer[0] = cursorPos;
                 StoreValue(txLayerCount,    layerCount,            col, px);
                 StoreValue(txInputState,    float(inputState),     col, px);
-
                 return col;
             }
             ENDCG
